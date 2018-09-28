@@ -51,8 +51,8 @@ public class Solution extends Chromosome{
                         " -Dcrossover_rate=%f" +
                         " -Dpopulation=%d -Dselection_function=%s -Dshow_progress=False" +
                         " -criterion branch" +
-                        "-Doutput_variables=TARGET_CLASS,criterion,Size,Length,MutationScore" +
-                        "-Dreport_dir=/home/ubuntu/algorithms/results/%d",
+                        " -Doutput_variables=TARGET_CLASS,criterion,Size,Length,MutationScore" +
+                        " -Dreport_dir=/home/ubuntu/java/results/%d",
                 crossover_rate, population, selection,count);
         Process pr = rt.exec(cmd);
         pr.waitFor();
