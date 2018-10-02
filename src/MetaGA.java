@@ -2,6 +2,7 @@ import org.evosuite.Properties;
 import org.evosuite.ga.*;
 import org.evosuite.ga.metaheuristics.NSGAII;
 import org.evosuite.ga.operators.crossover.UniformCrossOver;
+import org.evosuite.ga.stoppingconditions.MaxGenerationStoppingCondition;
 
 import java.io.IOException;
 import java.util.Random;
@@ -11,8 +12,8 @@ public class MetaGA{
 
 
     public static void main(String[] args) {
-//        define how a choromosome is encoded and what is the search space
-        ChromosomeFactory<Solution> factory = new ChromosomeFactory<Solution>() {
+       //  define how a chromosome is encoded and what is the search space
+        ChromosomeFactory factory = new ChromosomeFactory() {
             @Override
             public Solution getChromosome() {
                 int rnd1 = new Random().nextInt(5);
@@ -30,18 +31,14 @@ public class MetaGA{
                 return new Solution(p);
             }
         };
-    NSGAII ga= new NSGAII<>(factory);
+    NSGAII ga= new NSGAII(factory);
     FitnessFunction<Solution> function = new FitnessFunction<Solution>() {
         @Override
         public double getFitness(Solution solution) {
             try {
                 solution.runEvosuite();
-                double fitness = solution.getMutationScore();
-                return fitness;
-            } catch (IOException e) {
-                e.printStackTrace();
-                return 0;
-            } catch (InterruptedException e) {
+                return solution.getBranchCoverage();
+            } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
                 return 0;
             }
@@ -53,31 +50,27 @@ public class MetaGA{
         }
     };
 
-//        – Crossover rate: {0, .2, .5, .8, 1}.
-//– Population size: {4, 10, 50, 100, 200}.
-//– Elitism rate: {0, 1, 10 %, 50 %} or steady state.
-//– Selection: roulette wheel, tournament with size either 2 or 7, and rank selection
-//        with bias either 1.2 or 1.7.
-//– Parent replacement check (activated or not)
 
-//        specify what are the ga parameters
-        Properties.POPULATION = 100;
+        //  specify what are the ga parameters
+        Properties.POPULATION = 40;
         Properties.CROSSOVER_RATE = 0.5;
         Properties.MUTATION_RATE = 0.2;
 
-        //        create a population of choromosome
+        //  create a population of chromosome
 
+
+
+        ga.addFitnessFunction(function);
+        ga.setCrossOverFunction(new UniformCrossOver());
+        MaxGenerationStoppingCondition s1 = new MaxGenerationStoppingCondition();
+        s1.setLimit(20);
+        ga.addStoppingCondition(s1);
 
         ga.initializePopulation();
 
-        ga.addFitnessFunction(function);
-        System.out.println(ga.getNumberOfFitnessFunctions());
-        ga.setCrossOverFunction(new UniformCrossOver());
-
-
-//        run ga over the search space
+        //  run ga over the search space
         ga.generateSolution();
+        Properties.REPORT_DIR = "/home/ubuntu/results/metaga";
         ga.writeIndividuals(ga.getBestIndividuals());
-        ga.getBestIndividual();
     }
 }

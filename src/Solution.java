@@ -12,17 +12,17 @@ import org.evosuite.ga.localsearch.LocalSearchObjective;
 public class Solution extends Chromosome{
     private double crossover_rate;
     private int population;
-    private double elitism;
+    private int elitism;
     private String selection;
     private boolean parent_replacement;
     private int[] index;
     static int count=0;
-    static String[] selection_set= {"TOURNAMENT","RANK", "ROULETTEWHEEL", "BINARY_TOURNAMENT"};
+    static String[] selection_set= {"ROULETTEWHEEL","TOURNAMENT","RANK", "BINARY_TOURNAMENT"};
     static boolean [] replace = {true, false};
     static double [] cross = {0,0.2,0.5,0.8,1};
-    static int[] pop = {4,10,50,100,200};
-    static double[] elit= {0,1,0.1,0.5};
-    static int size[] = {cross.length,pop.length,elit.length,selection_set.length,replace.length};
+    static int[] pop = {10,20,50,100,200};
+    static int[] elite= {0,1,10,50};
+    static int size[] = {cross.length,pop.length,elite.length,selection_set.length,replace.length};
 
 
 
@@ -33,7 +33,15 @@ public class Solution extends Chromosome{
         index=param;
         crossover_rate = cross[index[0]];
         population=pop[index[1]];
-        elitism=elit[index[2]];
+        if (index[2]==2){
+            elitism = (int)0.1*population;
+        }
+        else if (index[2]==3) {
+            elitism =(int)0.5*population;
+        }
+        else {
+            elitism=elite[index[2]];
+        }
         selection=selection_set[index[3]];
         parent_replacement=replace[index[4]];
     }
@@ -41,44 +49,47 @@ public class Solution extends Chromosome{
         count++;
         Runtime rt = Runtime.getRuntime();
 //        String cmd = String.format("java -jar /Users/shayan/Desktop/Project/evosuite-1.0.6.jar -target /Users/shayan/Desktop/Project/SF100/1_tullibee/tullibee.jar" +
-//                        " -Dcrossover_rate=%f" +
+//                        " -Dcrossover_rate=%f -class com.ib.client.EClientErrors" +
 //                        " -Dpopulation=%d -Dselection_function=%s -Dshow_progress=False" +
-//                        " -criterion branch" +
+//                        " -criterion branch -Dsearch_budget=30 -Delite=%d -Dreplacement_function=%b" +
 //                        " -Doutput_variables=TARGET_CLASS,criterion,Size,Length,MutationScore" +
 //                        " -Dreport_dir=/Users/shayan/Desktop/Project/java/results/%d",
-//                crossover_rate, population, selection,count);
+//                crossover_rate, population, selection,elitism,parent_replacement,count);
         String cmd = String.format("java -jar /home/ubuntu/evosuite-1.0.6.jar -target /home/ubuntu/SF100/1_tullibee/tullibee.jar" +
                         " -Dcrossover_rate=%f" +
                         " -Dpopulation=%d -Dselection_function=%s -Dshow_progress=False" +
-                        " -criterion branch" +
-                        " -Doutput_variables=TARGET_CLASS,criterion,Size,Length,MutationScore" +
-                        " -Dreport_dir=/home/ubuntu/java/results/%d",
-                crossover_rate, population, selection,count);
+                        " -criterion branch -Dsearch_budget=30 -Delite=%d -Dreplacement_function=%b" +
+                        " -Doutput_variables=TARGET_CLASS,BranchCoverage,MutationScore" +
+                        " -Dreport_dir=/home/ubuntu/results/metaga/%d",
+                crossover_rate, population, selection, elitism,parent_replacement, count);
+
+//        String cmd = String.format("java -jar /home/ubuntu/evosuite-1.0.6.jar -target /home/ubuntu/SF100/1_tullibee/tullibee.jar" +
+//                        " -Dcrossover_rate=%f" +
+//                        " -Dpopulation=%d -Dselection_function=%s -Dshow_progress=False" +
+//                        " -criterion branch -Dsearch_budget=30 --Dtimeline_interval=5000" +
+//                        " -Doutput_variables=TARGET_CLASS,BranchCoverage,CoverageTimeline" +
+//                        " -Dreport_dir=/home/ubuntu/java/results/%d",
+//                crossover_rate, population, selection,count); // for meta GA + racing
         Process pr = rt.exec(cmd);
         pr.waitFor();
     }
 
-    public double getMutationScore(){
+    public double getBranchCoverage(){
         try {
-            //csv file containing data
 //            String strFile = String.format("/Users/shayan/Desktop/Project/java/results/%d/statistics.csv",count);
-            String strFile = String.format("/home/ubuntu/java/results/%d/statistics.csv",count);
+            String strFile = String.format("/home/ubuntu/results/metaga/%d/statistics.csv",count);
             CSVReader reader = new CSVReader(new FileReader(strFile));
             String[] nextLine;
-            int size_sum = 0;
-            double sum = 0;
             int lineNumber = 0;
+            double b_coverage=0;
             while ((nextLine = reader.readNext()) != null) {
                 lineNumber++;
                 if (lineNumber!=1){
-                    size_sum += Integer.parseInt(nextLine[2]);
-                    sum += Integer.parseInt(nextLine[2])*Double.parseDouble(nextLine[4]);
-
+                    b_coverage = Double.parseDouble(nextLine[1]);
                 }
                 // nextLine[] is an array of values from the line
             }
-            double MutationScore = sum/size_sum;
-            return MutationScore;
+            return b_coverage/lineNumber;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             return 0;
