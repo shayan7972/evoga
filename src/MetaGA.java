@@ -13,7 +13,7 @@ public class MetaGA{
 
     public static void main(String[] args) {
        //  define how a chromosome is encoded and what is the search space
-        ChromosomeFactory factory = new ChromosomeFactory() {
+        ChromosomeFactory<Solution> factory = new ChromosomeFactory<Solution>() {
             @Override
             public Solution getChromosome() {
                 int rnd1 = new Random().nextInt(5);
@@ -31,7 +31,7 @@ public class MetaGA{
                 return new Solution(p);
             }
         };
-    NSGAII ga= new NSGAII(factory);
+    NSGAII ga= new NSGAII<>(factory);
     FitnessFunction<Solution> function = new FitnessFunction<Solution>() {
         @Override
         public double getFitness(Solution solution) {
@@ -63,7 +63,7 @@ public class MetaGA{
         ga.addFitnessFunction(function);
         ga.setCrossOverFunction(new UniformCrossOver());
         MaxGenerationStoppingCondition s1 = new MaxGenerationStoppingCondition();
-        s1.setLimit(20);
+        s1.setLimit(10); // stop after 10 generation i.e 400 run
         ga.addStoppingCondition(s1);
 
         ga.initializePopulation();

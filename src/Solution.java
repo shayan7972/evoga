@@ -14,11 +14,11 @@ public class Solution extends Chromosome{
     private int population;
     private int elitism;
     private String selection;
-    private boolean parent_replacement;
+    private String parent_replacement;
     private int[] index;
     static int count=0;
     static String[] selection_set= {"ROULETTEWHEEL","TOURNAMENT","RANK", "BINARY_TOURNAMENT"};
-    static boolean [] replace = {true, false};
+    static String [] replace = {"FITNESSREPLACEMENT","DEFAULT"};
     static double [] cross = {0,0.2,0.5,0.8,1};
     static int[] pop = {10,20,50,100,200};
     static int[] elite= {0,1,10,50};
@@ -48,17 +48,18 @@ public class Solution extends Chromosome{
     public void runEvosuite() throws IOException, InterruptedException { //fitness
         count++;
         Runtime rt = Runtime.getRuntime();
+//        String cmd = "java -jar /Users/shayan/Desktop/Project/evosuite-1.0.6.jar -target /Users/shayan/Desktop/Project/SF100/1_tullibee/tullibee.jar -Dreport_dir=/Users/shayan/Desktop/Project/java/res/";
 //        String cmd = String.format("java -jar /Users/shayan/Desktop/Project/evosuite-1.0.6.jar -target /Users/shayan/Desktop/Project/SF100/1_tullibee/tullibee.jar" +
-//                        " -Dcrossover_rate=%f -class com.ib.client.EClientErrors" +
+//                        " -Dcrossover_rate=%f" +
 //                        " -Dpopulation=%d -Dselection_function=%s -Dshow_progress=False" +
-//                        " -criterion branch -Dsearch_budget=30 -Delite=%d -Dreplacement_function=%b" +
-//                        " -Doutput_variables=TARGET_CLASS,criterion,Size,Length,MutationScore" +
-//                        " -Dreport_dir=/Users/shayan/Desktop/Project/java/results/%d",
+//                        " -criterion branch -Dsearch_budget=30 -Delite=%d -Dreplacement_function=%s" +
+//                        " -Doutput_variables=TARGET_CLASS,BranchCoverage,MutationScore" +
+//                        " -Dreport_dir=/Users/shayan/Desktop/Project/java/res/%d",
 //                crossover_rate, population, selection,elitism,parent_replacement,count);
         String cmd = String.format("java -jar /home/ubuntu/evosuite-1.0.6.jar -target /home/ubuntu/SF100/1_tullibee/tullibee.jar" +
                         " -Dcrossover_rate=%f" +
                         " -Dpopulation=%d -Dselection_function=%s -Dshow_progress=False" +
-                        " -criterion branch -Dsearch_budget=30 -Delite=%d -Dreplacement_function=%b" +
+                        " -criterion branch -Dsearch_budget=120 -Delite=%d -Dreplacement_function=%s" +
                         " -Doutput_variables=TARGET_CLASS,BranchCoverage,MutationScore" +
                         " -Dreport_dir=/home/ubuntu/results/metaga/%d",
                 crossover_rate, population, selection, elitism,parent_replacement, count);
@@ -76,7 +77,7 @@ public class Solution extends Chromosome{
 
     public double getBranchCoverage(){
         try {
-//            String strFile = String.format("/Users/shayan/Desktop/Project/java/results/%d/statistics.csv",count);
+//            String strFile = String.format("/Users/shayan/Desktop/Project/java/res/%d/statistics.csv",count);
             String strFile = String.format("/home/ubuntu/results/metaga/%d/statistics.csv",count);
             CSVReader reader = new CSVReader(new FileReader(strFile));
             String[] nextLine;
